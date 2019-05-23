@@ -5,7 +5,7 @@ import {Args, Result, Hooks} from './types';
 
 /* CALL HOOKS */
 
-function callHooks ( fn: Function, hooks: Hooks ): Function {
+function callHooks<FN extends Function> ( fn: FN, hooks: Hooks ): FN {
 
   /* EVENTS */
 
@@ -100,7 +100,7 @@ function callHooks ( fn: Function, hooks: Hooks ): Function {
 
   }
 
-  return wrapper;
+  return wrapper as unknown as FN; //TSC
 
 }
 
