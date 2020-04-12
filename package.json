@@ -1,7 +1,7 @@
 {
   "name": "call-hooks",
   "description": "Function for adding before/after/call/arguments/result hooks to another function.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
