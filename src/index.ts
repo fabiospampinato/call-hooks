@@ -1,106 +1,71 @@
 
 /* IMPORT */
 
-import {Args, Result, Hooks} from './types';
+import {Args, Hooks} from './types';
 
 /* CALL HOOKS */
 
-function callHooks<FN extends Function> ( fn: FN, hooks: Hooks ): FN {
+function callHooks<FN extends Function> ( fn: FN, { args, before, call, result, after }: Hooks ): FN {
 
-  /* EVENTS */
+  /* HELPERS */
 
-  function onResult ( args: Args, callResult: Result ): Result {
+  const onCall = ( argv: Args, thisArg: any ) => {
 
-    const result = hookResult ( args, callResult );
+    if ( call ) return call.call ( thisArg, argv );
 
-    hookAfter ( args, result );
+    return fn.apply ( thisArg, argv );
 
-    return result;
+  };
 
-  }
+  const onResult = ( argv: Args, resv: any ) => {
 
-  function onError ( args: Args, err: Error ) {
+    resv = result ? result ( argv, resv ) : resv;
 
-    hookAfter ( args, err );
+    if ( after ) after ( argv, resv );
+
+    return resv;
+
+  };
+
+  const onError = ( argv: Args, err: Error ) => {
+
+    if ( after ) after ( argv, err );
 
     throw err;
 
-  }
-
-  /* HOOKS */
-
-  function hookArgs ( args: Args ): Args {
-
-    if ( !hooks.args ) return args;
-
-    return hooks.args ( args );
-
-  }
-
-  function hookBefore ( args: Args ): void {
-
-    if ( !hooks.before ) return;
-
-    hooks.before ( args );
-
-  }
-
-  function hookCall ( args: Args, thisArg ): Result {
-
-    if ( !hooks.call ) return fn.apply ( thisArg, args );
-
-    return hooks.call.call ( thisArg, args );
-
-  }
-
-  function hookResult ( args: Args, result ): Result {
-
-    if ( !hooks.result ) return result;
-
-    return hooks.result ( args, result );
-
-  }
-
-  function hookAfter ( args: Args, result: Result ): void {
-
-    if ( !hooks.after ) return;
-
-    hooks.after ( args, result );
-
-  }
+  };
 
   /* WRAPPER */
 
-  function wrapper () {
+  return function callHooksWrapper () {
 
-    const args = hookArgs ( arguments );
+    const argv = args ? args ( arguments ) : arguments;
+
+    if ( before ) before ( argv );
+
+    if ( !after && !result ) return onCall ( argv, this );
 
     try {
 
-      hookBefore ( args );
+      const resv = onCall ( argv, this );
 
-      const callResult = hookCall ( args, this );
+      if ( resv instanceof Promise ) {
 
-      if ( callResult instanceof Promise ) {
-
-        return callResult.then ( callResult => onResult ( args, callResult ) )
-                         .catch ( err => onError ( args, err ) );
+        return resv.then ( resv => onResult ( argv, resv ), err => onError ( argv, err ) );
 
       } else {
 
-        return onResult ( args, callResult );
+        return onResult ( argv, resv );
 
       }
 
     } catch ( err ) {
 
-      return onError ( args, err );
+      onError ( argv, err );
 
     }
 
-  }
-
-  return wrapper as unknown as FN; //TSC
+  } as unknown as FN; //TSC
 
 }
 
