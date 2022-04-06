@@ -1,10 +1,10 @@
 
 /* IMPORT */
 
-import {describe} from 'ava-spec';
-import callHooks from '../dist';
+import {describe} from 'fava';
+import callHooks from '../dist/index.js';
 
-/* TEST FN */
+/* HELPERS */
 
 async function testFn ( fn, t ) {
 
@@ -76,7 +76,7 @@ async function testThrowsFn ( fn, t ) {
 
 }
 
-/* CALL HOOKS */
+/* MAIN */
 
 describe ( 'Call Hooks', it => {
 
@@ -92,7 +92,7 @@ describe ( 'Call Hooks', it => {
 
     const fn = () => { throw new Error ( 'foo' ); };
 
-    await t.throwsAsync ( testThrowsFn ( fn, t ), 'foo' );
+    await t.throwsAsync ( () => testThrowsFn ( fn, t ), 'foo' );
 
   });
 
@@ -108,7 +108,7 @@ describe ( 'Call Hooks', it => {
 
     const fn = async () => { throw new Error ( 'foo' ); };
 
-    await t.throwsAsync ( testThrowsFn ( fn, t ), 'foo' );
+    await t.throwsAsync ( () => testThrowsFn ( fn, t ), 'foo' );
 
   });
 

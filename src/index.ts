@@ -1,73 +1,77 @@
 
 /* IMPORT */
 
-import {Args, Hooks} from './types';
+import type {Args, This, Result, Hooks} from './types';
 
-/* CALL HOOKS */
+/* MAIN */
 
-function callHooks<FN extends Function> ( fn: FN, { args, before, call, result, after }: Hooks ): FN {
+const callHooks = <FN extends Function> ( fn: FN, hooks: Hooks ): FN => {
 
   /* HELPERS */
 
-  const onCall = ( argv: Args, thisArg: any ) => {
+  const onCall = ( args: Args, thisArg: This ) => {
 
-    if ( call ) return call.call ( thisArg, argv );
+    if ( hooks.call ) return hooks.call.call ( thisArg, args );
 
-    return fn.apply ( thisArg, argv );
-
-  };
-
-  const onResult = ( argv: Args, resv: any ) => {
-
-    resv = result ? result ( argv, resv ) : resv;
-
-    if ( after ) after ( argv, resv );
-
-    return resv;
+    return fn.apply ( thisArg, args );
 
   };
 
-  const onError = ( argv: Args, err: Error ) => {
+  const onResult = ( args: Args, result: Result ) => {
 
-    if ( after ) after ( argv, err );
+    result = hooks.result ? hooks.result ( args, result ) : result;
 
-    throw err;
+    if ( hooks.after ) hooks.after ( args, result );
+
+    return result;
+
+  };
+
+  const onError = ( args: Args, error: unknown ) => {
+
+    if ( hooks.after ) hooks.after ( args, error );
+
+    throw error;
 
   };
 
   /* WRAPPER */
 
-  return function callHooksWrapper () {
+  return function callHooksWrapper ( this: This ) {
 
-    const argv = args ? args ( arguments ) : arguments;
+    const argsv = Array.from ( arguments );
+    const args = hooks.args ? hooks.args ( argsv ) : argsv;
 
-    if ( before ) before ( argv );
+    if ( hooks.before ) hooks.before ( args );
 
-    if ( !after && !result ) return onCall ( argv, this );
+    if ( !hooks.after && !hooks.result ) return onCall ( args, this );
 
     try {
 
-      const resv = onCall ( argv, this );
+      const result = onCall ( args, this );
 
-      if ( resv instanceof Promise ) {
+      if ( result instanceof Promise ) {
 
-        return resv.then ( resv => onResult ( argv, resv ), err => onError ( argv, err ) );
+        const onResolve = ( result: Result) => onResult ( args, result );
+        const onReject = ( error: unknown ) => onError ( args, error );
+
+        return result.then ( onResolve, onReject );
 
       } else {
 
-        return onResult ( argv, resv );
+        return onResult ( args, result );
 
       }
 
-    } catch ( err ) {
+    } catch ( error: unknown ) {
 
-      onError ( argv, err );
+      onError ( args, error );
 
     }
 
   } as unknown as FN; //TSC
 
-}
+};
 
 /* EXPORT */
 

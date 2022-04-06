@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
-const {default: callHooks} = require ( '../dist' ),
-      benchmark = require ( 'benchloop' );
+import benchmark from 'benchloop';
+import callHooks from '../dist/index.js';
 
 /* HELPERS */
 
@@ -12,7 +12,7 @@ const fn = ctx => {
   }
 };
 
-/* BENCHMARK */
+/* MAIN */
 
 benchmark.defaultOptions = Object.assign ( benchmark.defaultOptions, {
   iterations: 25,
@@ -26,8 +26,7 @@ benchmark.group ( 'sync', () => {
     name: 'control',
     beforeEach: ctx => {
       ctx.fn = () => {};
-    },
-
+    }
   });
 
   benchmark ({
