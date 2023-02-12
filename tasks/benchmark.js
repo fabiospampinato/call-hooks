@@ -15,8 +15,7 @@ const fn = ctx => {
 /* MAIN */
 
 benchmark.defaultOptions = Object.assign ( benchmark.defaultOptions, {
-  iterations: 25,
-  log: 'compact'
+  iterations: 25
 });
 
 benchmark.group ( 'sync', () => {
