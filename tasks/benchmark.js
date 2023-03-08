@@ -14,7 +14,7 @@ const fn = ctx => {
 
 /* MAIN */
 
-benchmark.defaultOptions = Object.assign ( benchmark.defaultOptions, {
+benchmark.config ({
   iterations: 25
 });
 
