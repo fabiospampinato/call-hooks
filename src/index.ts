@@ -76,3 +76,4 @@ const callHooks = <FN extends Function> ( fn: FN, hooks: Hooks ): FN => {
 /* EXPORT */
 
 export default callHooks;
+export type {Hooks};
