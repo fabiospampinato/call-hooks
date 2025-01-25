@@ -7,7 +7,7 @@ It supports both regular and async functions, even if they may throw.
 ## Install
 
 ```sh
-npm install --save call-hooks
+npm install call-hooks
 ```
 
 ## Usage
